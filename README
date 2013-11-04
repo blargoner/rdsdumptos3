@@ -1,0 +1,14 @@
+RDS MySQL dump to S3
+Copyright (c) 2013 John Peloquin
+
+A tool for taking MySQL dumps from RDS and sending them to S3.
+
+Requirements:
+- aws-cli (AWS command line tools)
+- jq (JSON parser)
+- mysqldump
+
+Usage:
+1. Configure config.sh
+2. Run rdsdumptos3.sh
+
