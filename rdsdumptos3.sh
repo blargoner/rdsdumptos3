@@ -15,7 +15,7 @@
 #
 function get_config () {
     # load config
-    source config.sh || return
+    source "`dirname "$0"`/config.sh" || return
 
     # check config
     if [[ -z "${aws_access_key_id}" || -z "${aws_secret_access_key}" ]]
