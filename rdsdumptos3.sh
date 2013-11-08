@@ -35,6 +35,7 @@ function get_config () {
     # set global aws config
     export AWS_ACCESS_KEY_ID="${aws_access_key_id}"
     export AWS_SECRET_ACCESS_KEY="${aws_secret_access_key}"
+    return 0
 }
 
 #
@@ -165,14 +166,15 @@ function get_dump_file () {
 #   $1 - filename
 #
 function dump_mysql () {
-    echo "Dumping MySQL data..."
+    echo 'Dumping MySQL data...'
     mysql_dump | gzip -9 > "$1"
     if [[ ${PIPESTATUS[0]} -ne 0 || $? -ne 0 ]]
     then
         echo 'Unable to dump MySQL data.' >&2
         return 1
     fi
-    echo "Dumped."
+    echo 'Dumped.'
+    return 0
 }
 
 #
@@ -183,14 +185,15 @@ function dump_mysql () {
 #   $2 - timestamp
 #
 function upload_to_s3 () {
-    echo "Uploading to S3..."
+    echo 'Uploading to S3...'
     s3_put "$1" "$2"
     if [[ $? -ne 0 ]]
     then
         echo 'Unable to upload to S3.' >&2
         return 1
     fi
-    echo "Uploaded."
+    echo 'Uploaded.'
+    return 0
 }
 
 #
