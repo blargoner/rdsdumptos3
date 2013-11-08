@@ -69,6 +69,11 @@ s3_bucket=
 s3_prefix=
 
 #
+# SNS topic ARN to optionally notify of success or failure.
+#
+sns_topic_arn=
+
+#
 # MySQL dump command.
 #
 # Edit command to customize options.

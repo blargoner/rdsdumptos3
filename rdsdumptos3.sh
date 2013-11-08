@@ -193,17 +193,54 @@ function upload_to_s3 () {
     echo "Uploaded."
 }
 
+#
+# Publishes notification to SNS.
+#
+# Parameters:
+#   $1 - subject
+#   $2 - message
+#
+function publish_to_sns () {
+    [[ -n "${sns_topic_arn}" ]] || return 0
+    echo 'Publishing notification to SNS...'
+    aws sns publish \
+        --topic-arn "${sns_topic_arn}" \
+        --subject "rdsdumptos3 - $1" \
+        --message "$2" >/dev/null
+    if [[ $? -ne 0 ]]
+    then
+        echo 'Unable to publish notification to SNS.' >&2
+        return 1
+    fi
+    echo 'Published.'
+    return 0
+}
+
+#
+# Notifies of success.
+#
+function notify_success () {
+    publish_to_sns 'SUCCESS' "Successfully dumped RDS instance ${rds_db_instance_identifier} to S3."
+}
+
+#
+# Notifies of failure.
+#
+function notify_failure () {
+    publish_to_sns 'FAILURE' "Failed to dump RDS instance ${rds_db_instance_identifier} to S3."
+}
+
 # get config
 get_config || exit
 
 # get ip
-get_ip || exit
+get_ip || { notify_failure ; exit 1 ; }
 
 # get rds details
-get_rds_details || exit
+get_rds_details || { notify_failure ; exit 1 ; }
 
 # authorize rds ingress
-auth_rds_ingress || exit
+auth_rds_ingress || { notify_failure ; exit 1 ; }
 
 # dump mysql
 mysql_dump_file=`get_dump_file`
@@ -213,6 +250,7 @@ if [[ $? -ne 0 ]]
 then
     rm "${mysql_dump_file}"
     revoke_rds_ingress
+    notify_failure
     exit 1
 fi
 
@@ -222,6 +260,7 @@ if [[ $? -ne 0 ]]
 then
     rm "${mysql_dump_file}"
     revoke_rds_ingress
+    notify_failure
     exit 1
 fi
 
@@ -230,6 +269,9 @@ rm "${mysql_dump_file}"
 
 # revoke rds ingress
 revoke_rds_ingress
+
+# notify success
+notify_success
 
 echo 'Done.'
 
