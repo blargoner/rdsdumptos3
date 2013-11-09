@@ -205,8 +205,10 @@ function upload_to_s3 () {
 #
 function publish_to_sns () {
     [[ -n "${sns_topic_arn}" ]] || return 0
+    local sns_region=`cut -d':' -f4 <<< "${sns_topic_arn}"`
     echo 'Publishing notification to SNS...'
     aws sns publish \
+        --region="${sns_region}" \
         --topic-arn "${sns_topic_arn}" \
         --subject "rdsdumptos3 - $1" \
         --message "$2" >/dev/null
